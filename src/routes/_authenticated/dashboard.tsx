@@ -290,3 +290,38 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
     </Card>
   );
 }
+
+function buildAiPrompt(apiKey: string, origin: string) {
+  const base = origin || "https://YOUR-APP.lovable.app";
+  return `You are integrating my app with the Coin Sync API. Use it to store and read per-user coin balances.
+
+BASE URL: ${base}
+ENDPOINT: ${base}/api/public/coins
+AUTH HEADER (keep secret, server-side only): x-api-key: ${apiKey}
+
+# Add or subtract coins (delta can be negative)
+POST /api/public/coins
+Headers: { "x-api-key": "${apiKey}", "Content-Type": "application/json" }
+Body: { "external_user_id": "<your user id>", "delta": 10, "reason": "level up" }
+Response: { "external_user_id": "...", "balance": 123 }
+
+# Set absolute balance
+POST /api/public/coins
+Body: { "external_user_id": "<your user id>", "set": 500 }
+
+# Read all balances for this app
+GET /api/public/coins
+Headers: { "x-api-key": "${apiKey}" }
+Response: { "balances": [{ "external_user_id": "...", "balance": 123, "updated_at": "..." }] }
+
+# Read one user's balance
+GET /api/public/coins?external_user_id=<your user id>
+
+Rules:
+- Never expose the x-api-key in client/browser code; only call this API from your server/backend.
+- external_user_id is whatever stable user identifier your app already uses.
+- delta must be an integer; balance can not go below 0 unless you explicitly use "set".
+- On 401: invalid key. On 400: invalid body. On 500: server error — retry with backoff.
+
+Please generate the integration code for my stack and wire it into the user actions that should earn or spend coins.`;
+}
