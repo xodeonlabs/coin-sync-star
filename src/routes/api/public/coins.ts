@@ -1,0 +1,95 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import { createHash } from "crypto";
+
+const BodySchema = z.object({
+  external_user_id: z.string().min(1).max(255),
+  delta: z.number().int().optional(),
+  set: z.number().int().min(0).optional(),
+  reason: z.string().max(255).optional(),
+});
+
+async function authApp(request: Request) {
+  const key = request.headers.get("x-api-key") ?? "";
+  if (!key.startsWith("csk_")) return { error: "Missing or invalid x-api-key", status: 401 as const };
+  const hash = createHash("sha256").update(key).digest("hex");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin.from("apps").select("id, owner_id").eq("api_key_hash", hash).maybeSingle();
+  if (error || !data) return { error: "Invalid API key", status: 401 as const };
+  return { app: data, supabaseAdmin };
+}
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+};
+
+export const Route = createFileRoute("/api/public/coins")({
+  server: {
+    handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
+
+      GET: async ({ request }) => {
+        const auth = await authApp(request);
+        if ("error" in auth) return Response.json({ error: auth.error }, { status: auth.status, headers: corsHeaders });
+        const url = new URL(request.url);
+        const externalUserId = url.searchParams.get("external_user_id");
+        let q = auth.supabaseAdmin
+          .from("coin_balances")
+          .select("external_user_id, balance, updated_at")
+          .eq("app_id", auth.app.id);
+        if (externalUserId) q = q.eq("external_user_id", externalUserId);
+        const { data, error } = await q;
+        if (error) return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
+        return Response.json({ balances: data }, { headers: corsHeaders });
+      },
+
+      POST: async ({ request }) => {
+        const auth = await authApp(request);
+        if ("error" in auth) return Response.json({ error: auth.error }, { status: auth.status, headers: corsHeaders });
+        let body: unknown;
+        try { body = await request.json(); } catch { return Response.json({ error: "Invalid JSON" }, { status: 400, headers: corsHeaders }); }
+        const parsed = BodySchema.safeParse(body);
+        if (!parsed.success) return Response.json({ error: parsed.error.message }, { status: 400, headers: corsHeaders });
+        const { external_user_id, delta, set, reason } = parsed.data;
+        if (delta === undefined && set === undefined) {
+          return Response.json({ error: "Provide 'delta' or 'set'" }, { status: 400, headers: corsHeaders });
+        }
+
+        const { supabaseAdmin } = auth;
+        const { data: existing } = await supabaseAdmin
+          .from("coin_balances")
+          .select("id, balance")
+          .eq("app_id", auth.app.id)
+          .eq("external_user_id", external_user_id)
+          .maybeSingle();
+
+        const currentBalance = existing?.balance ?? 0;
+        const newBalance = set !== undefined ? set : currentBalance + (delta ?? 0);
+        const actualDelta = newBalance - currentBalance;
+
+        const upsert = await supabaseAdmin
+          .from("coin_balances")
+          .upsert(
+            { app_id: auth.app.id, external_user_id, balance: newBalance, updated_at: new Date().toISOString() },
+            { onConflict: "app_id,external_user_id" },
+          )
+          .select("balance")
+          .single();
+        if (upsert.error) return Response.json({ error: upsert.error.message }, { status: 500, headers: corsHeaders });
+
+        if (actualDelta !== 0) {
+          await supabaseAdmin.from("coin_events").insert({
+            app_id: auth.app.id,
+            external_user_id,
+            delta: actualDelta,
+            reason: reason ?? null,
+          });
+        }
+
+        return Response.json({ external_user_id, balance: upsert.data.balance }, { headers: corsHeaders });
+      },
+    },
+  },
+});
