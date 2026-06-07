@@ -246,6 +246,15 @@ GET /api/public/coins?external_user_id=user_123`}</pre>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold">Complete AI integration prompt</p>
+                  <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(buildAiPrompt(newKey, typeof window !== "undefined" ? window.location.origin : "")); toast.success("Prompt copied"); }}>
+                    <Copy className="h-4 w-4 mr-1" /> Copy prompt
+                  </Button>
+                </div>
+                <pre className="bg-muted p-3 rounded text-xs max-h-64 overflow-auto whitespace-pre-wrap">{buildAiPrompt(newKey, typeof window !== "undefined" ? window.location.origin : "")}</pre>
+              </div>
               <DialogFooter>
                 <Button onClick={() => { setOpen(false); setNewKey(null); }}>Done</Button>
               </DialogFooter>
