@@ -14,7 +14,121 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      apps: {
+        Row: {
+          api_key_hash: string
+          api_key_prefix: string
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          api_key_hash: string
+          api_key_prefix: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          api_key_hash?: string
+          api_key_prefix?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      coin_balances: {
+        Row: {
+          app_id: string
+          balance: number
+          external_user_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          app_id: string
+          balance?: number
+          external_user_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          app_id?: string
+          balance?: number
+          external_user_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_balances_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coin_events: {
+        Row: {
+          app_id: string
+          created_at: string
+          delta: number
+          external_user_id: string
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          delta: number
+          external_user_id: string
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          delta?: number
+          external_user_id?: string
+          id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_events_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
