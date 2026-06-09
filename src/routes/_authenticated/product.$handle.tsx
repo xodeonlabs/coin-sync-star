@@ -7,7 +7,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { useCartStore } from "@/stores/cartStore";
 import { useCartSync } from "@/hooks/useCartSync";
 
-export const Route = createFileRoute("/product/$handle")({
+export const Route = createFileRoute("/_authenticated/product/$handle")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.handle} — Coin Sync Shop` },

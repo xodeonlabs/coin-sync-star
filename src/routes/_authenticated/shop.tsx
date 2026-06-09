@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useCartSync } from "@/hooks/useCartSync";
 
-export const Route = createFileRoute("/shop")({
+export const Route = createFileRoute("/_authenticated/shop")({
   head: () => ({
     meta: [
       { title: "Shop — Coin Sync" },
