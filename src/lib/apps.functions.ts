@@ -7,7 +7,7 @@ export const listApps = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("apps")
-      .select("id, name, api_key_prefix, created_at")
+      .select("id, name, api_key_prefix, api_key_plaintext, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
