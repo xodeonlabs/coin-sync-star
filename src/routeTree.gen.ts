@@ -12,10 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ApiPublicCoinsRouteImport } from './routes/api/public/coins'
-import { Route as AuthenticatedProductHandleRouteImport } from './routes/_authenticated/product.$handle'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -31,11 +29,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -46,27 +39,17 @@ const ApiPublicCoinsRoute = ApiPublicCoinsRouteImport.update({
   path: '/api/public/coins',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedProductHandleRoute =
-  AuthenticatedProductHandleRouteImport.update({
-    id: '/product/$handle',
-    path: '/product/$handle',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/shop': typeof AuthenticatedShopRoute
-  '/product/$handle': typeof AuthenticatedProductHandleRoute
   '/api/public/coins': typeof ApiPublicCoinsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/shop': typeof AuthenticatedShopRoute
-  '/product/$handle': typeof AuthenticatedProductHandleRoute
   '/api/public/coins': typeof ApiPublicCoinsRoute
 }
 export interface FileRoutesById {
@@ -75,35 +58,19 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/shop': typeof AuthenticatedShopRoute
-  '/_authenticated/product/$handle': typeof AuthenticatedProductHandleRoute
   '/api/public/coins': typeof ApiPublicCoinsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/auth'
-    | '/dashboard'
-    | '/shop'
-    | '/product/$handle'
-    | '/api/public/coins'
+  fullPaths: '/' | '/auth' | '/dashboard' | '/api/public/coins'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/dashboard'
-    | '/shop'
-    | '/product/$handle'
-    | '/api/public/coins'
+  to: '/' | '/auth' | '/dashboard' | '/api/public/coins'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
-    | '/_authenticated/shop'
-    | '/_authenticated/product/$handle'
     | '/api/public/coins'
   fileRoutesById: FileRoutesById
 }
@@ -137,13 +104,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/shop': {
-      id: '/_authenticated/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof AuthenticatedShopRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -158,26 +118,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCoinsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/product/$handle': {
-      id: '/_authenticated/product/$handle'
-      path: '/product/$handle'
-      fullPath: '/product/$handle'
-      preLoaderRoute: typeof AuthenticatedProductHandleRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedShopRoute: typeof AuthenticatedShopRoute
-  AuthenticatedProductHandleRoute: typeof AuthenticatedProductHandleRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedShopRoute: AuthenticatedShopRoute,
-  AuthenticatedProductHandleRoute: AuthenticatedProductHandleRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -192,3 +141,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -14,18 +14,6 @@ import { Coins, Plus, Trash2, Copy, LogOut, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  ssr: false,
-  beforeLoad: async () => {
-    const { data: u } = await supabase.auth.getUser();
-    if (!u.user) throw (await import("@tanstack/react-router")).redirect({ to: "/auth" });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", u.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw (await import("@tanstack/react-router")).redirect({ to: "/shop" });
-  },
   head: () => ({ meta: [{ title: "Dashboard — Coin Sync" }] }),
   component: Dashboard,
 });
