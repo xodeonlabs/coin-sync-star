@@ -7,7 +7,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { useCartStore } from "@/stores/cartStore";
 import { useCartSync } from "@/hooks/useCartSync";
 
-export const Route = createFileRoute("/product/$handle")({
+export const Route = createFileRoute("/_authenticated/product/$handle")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.handle} — Coin Sync Shop` },
@@ -68,7 +68,7 @@ function ProductPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/shop" className="flex items-center gap-2">
             <Coins className="h-5 w-5 text-primary" />
             <span className="font-semibold">Coin Sync</span>
           </Link>
