@@ -31,9 +31,9 @@ function Dashboard() {
   const [newName, setNewName] = useState("");
   const [open, setOpen] = useState(false);
 
-  const apps = useQuery({ queryKey: ["apps"], queryFn: () => fetchApps() });
-  const balances = useQuery({ queryKey: ["balances"], queryFn: () => fetchBalances({ data: {} }) });
-  const events = useQuery({ queryKey: ["events"], queryFn: () => fetchEvents({ data: {} }) });
+  const apps = useQuery({ queryKey: ["apps"], queryFn: () => fetchApps(), refetchInterval: 5000, refetchIntervalInBackground: true, refetchOnWindowFocus: true, refetchOnReconnect: true });
+  const balances = useQuery({ queryKey: ["balances"], queryFn: () => fetchBalances({ data: {} }), refetchInterval: 5000, refetchIntervalInBackground: true, refetchOnWindowFocus: true, refetchOnReconnect: true });
+  const events = useQuery({ queryKey: ["events"], queryFn: () => fetchEvents({ data: {} }), refetchInterval: 5000, refetchIntervalInBackground: true, refetchOnWindowFocus: true, refetchOnReconnect: true });
 
   useEffect(() => {
     const ch = supabase
