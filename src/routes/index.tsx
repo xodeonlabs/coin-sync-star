@@ -21,7 +21,10 @@ function Index() {
             <Coins className="h-5 w-5 text-primary" />
             <span className="font-semibold">Coin Sync</span>
           </div>
-          <Link to="/auth"><Button size="sm">Sign in</Button></Link>
+          <div className="flex gap-2">
+            <Link to="/shop"><Button size="sm" variant="outline">Shop</Button></Link>
+            <Link to="/auth"><Button size="sm">Sign in</Button></Link>
+          </div>
         </div>
       </header>
 
