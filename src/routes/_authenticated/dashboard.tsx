@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listApps, createApp, deleteApp, listBalances, listEvents } from "@/lib/apps.functions";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,20 @@ function Dashboard() {
   const apps = useQuery({ queryKey: ["apps"], queryFn: () => fetchApps() });
   const balances = useQuery({ queryKey: ["balances"], queryFn: () => fetchBalances({ data: {} }) });
   const events = useQuery({ queryKey: ["events"], queryFn: () => fetchEvents({ data: {} }) });
+
+  useEffect(() => {
+    const ch = supabase
+      .channel("coin-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "coin_balances" }, () => {
+        qc.invalidateQueries({ queryKey: ["balances"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "coin_events" }, () => {
+        qc.invalidateQueries({ queryKey: ["events"] });
+        qc.invalidateQueries({ queryKey: ["balances"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const createM = useMutation({
     mutationFn: (name: string) => createFn({ data: { name } }),
