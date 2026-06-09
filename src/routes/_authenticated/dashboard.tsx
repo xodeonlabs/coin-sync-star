@@ -108,24 +108,35 @@ function Dashboard() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead>API key prefix</TableHead>
+                      <TableHead>API key</TableHead>
                       <TableHead>Created</TableHead>
-                      <TableHead className="w-12"></TableHead>
+                      <TableHead className="w-40 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(apps.data ?? []).map((a) => (
-                      <TableRow key={a.id}>
-                        <TableCell className="font-medium">{a.name}</TableCell>
-                        <TableCell className="font-mono text-xs text-muted-foreground">{a.api_key_prefix}…</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">{new Date(a.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <Button size="icon" variant="ghost" onClick={() => { if (confirm("Delete this app and all its coin data?")) deleteM.mutate(a.id); }}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {(apps.data ?? []).map((a) => {
+                      const key = (a as { api_key_plaintext: string | null }).api_key_plaintext;
+                      return (
+                        <TableRow key={a.id}>
+                          <TableCell className="font-medium">{a.name}</TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">{a.api_key_prefix}…</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{new Date(a.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              <Button size="sm" variant="outline" disabled={!key} onClick={() => { if (key) { navigator.clipboard.writeText(key); toast.success("Key copied"); } }}>
+                                <Copy className="h-3 w-3 mr-1" /> Key
+                              </Button>
+                              <Button size="sm" variant="outline" disabled={!key} onClick={() => { if (key) { navigator.clipboard.writeText(buildAiPrompt(key, typeof window !== "undefined" ? window.location.origin : "")); toast.success("Prompt copied"); } }}>
+                                <Copy className="h-3 w-3 mr-1" /> Prompt
+                              </Button>
+                              <Button size="icon" variant="ghost" onClick={() => { if (confirm("Delete this app and all its coin data?")) deleteM.mutate(a.id); }}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                     {apps.data?.length === 0 && (
                       <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No apps yet. Create one to get your first API key.</TableCell></TableRow>
                     )}

@@ -1,0 +1,1 @@
+ALTER TABLE public.apps ADD COLUMN IF NOT EXISTS api_key_plaintext TEXT;

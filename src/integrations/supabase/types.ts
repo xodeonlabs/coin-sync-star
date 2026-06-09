@@ -17,6 +17,7 @@ export type Database = {
       apps: {
         Row: {
           api_key_hash: string
+          api_key_plaintext: string | null
           api_key_prefix: string
           created_at: string
           id: string
@@ -25,6 +26,7 @@ export type Database = {
         }
         Insert: {
           api_key_hash: string
+          api_key_plaintext?: string | null
           api_key_prefix: string
           created_at?: string
           id?: string
@@ -33,6 +35,7 @@ export type Database = {
         }
         Update: {
           api_key_hash?: string
+          api_key_plaintext?: string | null
           api_key_prefix?: string
           created_at?: string
           id?: string

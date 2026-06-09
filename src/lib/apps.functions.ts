@@ -7,7 +7,7 @@ export const listApps = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("apps")
-      .select("id, name, api_key_prefix, created_at")
+      .select("id, name, api_key_prefix, api_key_plaintext, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -21,7 +21,7 @@ export const createApp = createServerFn({ method: "POST" })
     const { plaintext, prefix, hash } = generateApiKey();
     const { data: row, error } = await context.supabase
       .from("apps")
-      .insert({ name: data.name, owner_id: context.userId, api_key_prefix: prefix, api_key_hash: hash })
+      .insert({ name: data.name, owner_id: context.userId, api_key_prefix: prefix, api_key_hash: hash, api_key_plaintext: plaintext })
       .select("id, name, api_key_prefix, created_at")
       .single();
     if (error) throw new Error(error.message);
