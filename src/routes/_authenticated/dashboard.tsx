@@ -78,8 +78,8 @@ function Dashboard() {
 
     const totalCoins = (balances.data ?? []).reduce((s, b) => s + Number(b.balance), 0);
     const totalUsers = new Set((balances.data ?? []).map((b) => {
-      const email = (b as { email?: string | null }).email;
-      return email ? `e:${email.toLowerCase()}` : `u:${b.app_id}:${b.external_user_id}`;
+      const email = (b as { email?: string | null }).email?.trim().toLowerCase();
+      return email ? `e:${email}` : `u:${b.app_id}:${b.external_user_id}`;
     })).size;
 
   return (
