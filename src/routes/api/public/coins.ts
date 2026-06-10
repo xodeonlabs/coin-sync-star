@@ -4,6 +4,7 @@ import { createHash } from "crypto";
 
 const BodySchema = z.object({
   external_user_id: z.string().min(1).max(255),
+  email: z.string().email().max(255).optional(),
   delta: z.number().int().optional(),
   set: z.number().int().min(0).optional(),
   reason: z.string().max(255).optional(),
