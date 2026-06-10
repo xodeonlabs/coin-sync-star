@@ -58,6 +58,7 @@ export const Route = createFileRoute("/api/public/coins")({
         const parsed = BodySchema.safeParse(body);
         if (!parsed.success) return Response.json({ error: parsed.error.message }, { status: 400, headers: corsHeaders });
         const { external_user_id, delta, set, reason } = parsed.data;
+        const email = parsed.data.email?.toLowerCase() ?? null;
         if (delta === undefined && set === undefined) {
           return Response.json({ error: "Provide 'delta' or 'set'" }, { status: 400, headers: corsHeaders });
         }
@@ -77,7 +78,7 @@ export const Route = createFileRoute("/api/public/coins")({
         const upsert = await supabaseAdmin
           .from("coin_balances")
           .upsert(
-            { app_id: auth.app.id, external_user_id, balance: newBalance, updated_at: new Date().toISOString() },
+            { app_id: auth.app.id, external_user_id, email, balance: newBalance, updated_at: new Date().toISOString() },
             { onConflict: "app_id,external_user_id" },
           )
           .select("balance")
@@ -88,12 +89,13 @@ export const Route = createFileRoute("/api/public/coins")({
           await supabaseAdmin.from("coin_events").insert({
             app_id: auth.app.id,
             external_user_id,
+            email,
             delta: actualDelta,
             reason: reason ?? null,
           });
         }
 
-        return Response.json({ external_user_id, balance: upsert.data.balance }, { headers: corsHeaders });
+        return Response.json({ external_user_id, email, balance: upsert.data.balance }, { headers: corsHeaders });
       },
     },
   },
