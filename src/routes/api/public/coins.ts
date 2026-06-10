@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/coins")({
         const parsed = BodySchema.safeParse(body);
         if (!parsed.success) return Response.json({ error: parsed.error.message }, { status: 400, headers: corsHeaders });
         const { external_user_id, delta, set, reason } = parsed.data;
-        const email = parsed.data.email?.toLowerCase() ?? null;
+        const email = parsed.data.email?.trim().toLowerCase() || null;
         if (delta === undefined && set === undefined) {
           return Response.json({ error: "Provide 'delta' or 'set'" }, { status: 400, headers: corsHeaders });
         }
