@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/public/coins")({
           : [];
         let q = auth.supabaseAdmin
           .from("coin_balances")
-          .select("external_user_id, balance, updated_at")
+          .select("external_user_id, email, balance, updated_at")
           .eq("app_id", auth.app.id);
         if (ids.length === 1) q = q.eq("external_user_id", ids[0]);
         else if (ids.length > 1) q = q.in("external_user_id", ids);
