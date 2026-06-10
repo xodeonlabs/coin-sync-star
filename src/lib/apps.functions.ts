@@ -43,7 +43,7 @@ export const listBalances = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     let q = context.supabase
       .from("coin_balances")
-      .select("id, app_id, external_user_id, balance, updated_at, apps!inner(name)")
+      .select("id, app_id, external_user_id, email, balance, updated_at, apps!inner(name)")
       .order("updated_at", { ascending: false })
       .limit(500);
     if (data.appId) q = q.eq("app_id", data.appId);
