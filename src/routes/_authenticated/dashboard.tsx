@@ -330,7 +330,7 @@ AUTH HEADER (keep secret, server-side only): x-api-key: ${apiKey}
 # Add or subtract coins (delta can be negative)
 POST /api/public/coins
 Headers: { "x-api-key": "${apiKey}", "Content-Type": "application/json" }
-Body: { "external_user_id": "<your user id>", "delta": 10, "reason": "level up" }
+Body: { "external_user_id": "<your user id>", "email": "<user email if known>", "delta": 10, "reason": "level up" }
 Response: { "external_user_id": "...", "balance": 123 }
 
 # Set absolute balance
