@@ -348,6 +348,7 @@ GET /api/public/coins?external_user_id=<your user id>
 Rules:
 - Never expose the x-api-key in client/browser code; only call this API from your server/backend.
 - external_user_id is whatever stable user identifier your app already uses.
+- ALWAYS include "email" when you have it (e.g. from Google sign-in). It lets the same person be counted as one user across multiple apps.
 - delta must be an integer; balance can not go below 0 unless you explicitly use "set".
 - On 401: invalid key. On 400: invalid body. On 500: server error — retry with backoff.
 
