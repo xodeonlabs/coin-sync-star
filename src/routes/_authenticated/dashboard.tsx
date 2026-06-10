@@ -76,8 +76,11 @@ function Dashboard() {
     navigate({ to: "/auth", replace: true });
   };
 
-  const totalCoins = (balances.data ?? []).reduce((s, b) => s + Number(b.balance), 0);
-  const totalUsers = new Set((balances.data ?? []).map((b) => b.external_user_id)).size;
+    const totalCoins = (balances.data ?? []).reduce((s, b) => s + Number(b.balance), 0);
+    const totalUsers = new Set((balances.data ?? []).map((b) => {
+      const email = (b as { email?: string | null }).email;
+      return email ? `e:${email.toLowerCase()}` : `u:${b.app_id}:${b.external_user_id}`;
+    })).size;
 
   return (
     <div className="min-h-screen bg-background">
@@ -327,7 +330,7 @@ AUTH HEADER (keep secret, server-side only): x-api-key: ${apiKey}
 # Add or subtract coins (delta can be negative)
 POST /api/public/coins
 Headers: { "x-api-key": "${apiKey}", "Content-Type": "application/json" }
-Body: { "external_user_id": "<your user id>", "delta": 10, "reason": "level up" }
+Body: { "external_user_id": "<your user id>", "email": "<user email if known>", "delta": 10, "reason": "level up" }
 Response: { "external_user_id": "...", "balance": 123 }
 
 # Set absolute balance
@@ -345,6 +348,7 @@ GET /api/public/coins?external_user_id=<your user id>
 Rules:
 - Never expose the x-api-key in client/browser code; only call this API from your server/backend.
 - external_user_id is whatever stable user identifier your app already uses.
+- ALWAYS include "email" when you have it (e.g. from Google sign-in). It lets the same person be counted as one user across multiple apps.
 - delta must be an integer; balance can not go below 0 unless you explicitly use "set".
 - On 401: invalid key. On 400: invalid body. On 500: server error — retry with backoff.
 

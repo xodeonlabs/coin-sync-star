@@ -48,6 +48,7 @@ export type Database = {
         Row: {
           app_id: string
           balance: number
+          email: string | null
           external_user_id: string
           id: string
           updated_at: string
@@ -55,6 +56,7 @@ export type Database = {
         Insert: {
           app_id: string
           balance?: number
+          email?: string | null
           external_user_id: string
           id?: string
           updated_at?: string
@@ -62,6 +64,7 @@ export type Database = {
         Update: {
           app_id?: string
           balance?: number
+          email?: string | null
           external_user_id?: string
           id?: string
           updated_at?: string
@@ -81,6 +84,7 @@ export type Database = {
           app_id: string
           created_at: string
           delta: number
+          email: string | null
           external_user_id: string
           id: string
           reason: string | null
@@ -89,6 +93,7 @@ export type Database = {
           app_id: string
           created_at?: string
           delta: number
+          email?: string | null
           external_user_id: string
           id?: string
           reason?: string | null
@@ -97,6 +102,7 @@ export type Database = {
           app_id?: string
           created_at?: string
           delta?: number
+          email?: string | null
           external_user_id?: string
           id?: string
           reason?: string | null
