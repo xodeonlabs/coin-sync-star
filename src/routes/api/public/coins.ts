@@ -34,12 +34,16 @@ export const Route = createFileRoute("/api/public/coins")({
         const auth = await authApp(request);
         if ("error" in auth) return Response.json({ error: auth.error }, { status: auth.status, headers: corsHeaders });
         const url = new URL(request.url);
-        const externalUserId = url.searchParams.get("external_user_id");
+        const externalUserIdRaw = url.searchParams.get("external_user_id");
+        const ids = externalUserIdRaw
+          ? externalUserIdRaw.split(",").map((s) => s.trim()).filter(Boolean)
+          : [];
         let q = auth.supabaseAdmin
           .from("coin_balances")
           .select("external_user_id, balance, updated_at")
           .eq("app_id", auth.app.id);
-        if (externalUserId) q = q.eq("external_user_id", externalUserId);
+        if (ids.length === 1) q = q.eq("external_user_id", ids[0]);
+        else if (ids.length > 1) q = q.in("external_user_id", ids);
         const { data, error } = await q;
         if (error) return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
         return Response.json({ balances: data }, { headers: corsHeaders });
