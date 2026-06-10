@@ -76,8 +76,11 @@ function Dashboard() {
     navigate({ to: "/auth", replace: true });
   };
 
-  const totalCoins = (balances.data ?? []).reduce((s, b) => s + Number(b.balance), 0);
-  const totalUsers = new Set((balances.data ?? []).map((b) => b.external_user_id)).size;
+    const totalCoins = (balances.data ?? []).reduce((s, b) => s + Number(b.balance), 0);
+    const totalUsers = new Set((balances.data ?? []).map((b) => {
+      const email = (b as { email?: string | null }).email;
+      return email ? `e:${email.toLowerCase()}` : `u:${b.app_id}:${b.external_user_id}`;
+    })).size;
 
   return (
     <div className="min-h-screen bg-background">
