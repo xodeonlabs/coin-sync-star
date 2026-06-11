@@ -57,21 +57,39 @@ export const Route = createFileRoute("/api/public/coins")({
         try { body = await request.json(); } catch { return Response.json({ error: "Invalid JSON" }, { status: 400, headers: corsHeaders }); }
         const parsed = BodySchema.safeParse(body);
         if (!parsed.success) return Response.json({ error: parsed.error.message }, { status: 400, headers: corsHeaders });
-        const { external_user_id, delta, set, reason } = parsed.data;
+        const { delta, set, reason } = parsed.data;
         const email = parsed.data.email?.trim().toLowerCase() || null;
+        // When email is provided, use a canonical id so the same person shares
+        // one balance across every app.
+        const external_user_id = email ? `email:${email}` : parsed.data.external_user_id;
         if (delta === undefined && set === undefined) {
           return Response.json({ error: "Provide 'delta' or 'set'" }, { status: 400, headers: corsHeaders });
         }
 
         const { supabaseAdmin } = auth;
-        const { data: existing } = await supabaseAdmin
-          .from("coin_balances")
-          .select("id, balance")
-          .eq("app_id", auth.app.id)
-          .eq("external_user_id", external_user_id)
-          .maybeSingle();
 
-        const currentBalance = existing?.balance ?? 0;
+        // Current balance: when email is given, share across ALL apps for the
+        // same canonical id (use the most recently updated row as truth).
+        let currentBalance = 0;
+        if (email) {
+          const { data: shared } = await supabaseAdmin
+            .from("coin_balances")
+            .select("balance, updated_at")
+            .eq("external_user_id", external_user_id)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          currentBalance = shared?.balance ?? 0;
+        } else {
+          const { data: existing } = await supabaseAdmin
+            .from("coin_balances")
+            .select("balance")
+            .eq("app_id", auth.app.id)
+            .eq("external_user_id", external_user_id)
+            .maybeSingle();
+          currentBalance = existing?.balance ?? 0;
+        }
+
         const newBalance = set !== undefined ? set : currentBalance + (delta ?? 0);
         const actualDelta = newBalance - currentBalance;
 
@@ -84,6 +102,16 @@ export const Route = createFileRoute("/api/public/coins")({
           .select("balance")
           .single();
         if (upsert.error) return Response.json({ error: upsert.error.message }, { status: 500, headers: corsHeaders });
+
+        // Sync the new balance to every other app's row for this email so all
+        // connected apps see the same total.
+        if (email) {
+          await supabaseAdmin
+            .from("coin_balances")
+            .update({ balance: newBalance, email, updated_at: new Date().toISOString() })
+            .eq("external_user_id", external_user_id)
+            .neq("app_id", auth.app.id);
+        }
 
         if (actualDelta !== 0) {
           await supabaseAdmin.from("coin_events").insert({
